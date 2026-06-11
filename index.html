@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Greenhouse Engineers — Plant Care Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.10/babel.min.js"></script>
+<style>
+  :root{
+    --paper:#EEF3EA;--panel:#F7FAF4;--ink:#19241D;--slate:#5C6D60;
+    --leaf:#2F6B43;--leaf-deep:#1E4A2E;--grow:#A9DE3A;--grow-deep:#7FB022;
+    --amber:#E0962B;--clay:#C5562F;--mist:#D7E4D6;--line:#C3D4C1;
+    --shadow:0 1px 0 rgba(30,74,46,.04), 0 10px 30px -18px rgba(30,74,46,.45);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:"Inter",system-ui,sans-serif;color:var(--ink);background-color:var(--paper);
+    background-image:linear-gradient(rgba(47,107,67,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(47,107,67,.05) 1px,transparent 1px);
+    background-size:26px 26px;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .wrap{max-width:1040px;margin:0 auto;padding:28px 20px 80px}
+  .masthead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;
+    border-bottom:2px solid var(--leaf-deep);padding-bottom:18px;margin-bottom:22px}
+  .brand-eyebrow{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--leaf);font-weight:700;display:flex;align-items:center;gap:8px}
+  .brand-eyebrow .leaf{width:18px;height:18px;display:inline-block}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(30px,5vw,46px);line-height:1.02;margin:6px 0 0;letter-spacing:-.01em}
+  .tagline{color:var(--slate);font-size:14px;margin-top:6px;max-width:46ch}
+  .stamp{font-family:"Space Mono",monospace;font-size:11px;color:var(--slate);text-align:right;line-height:1.6;
+    border:1px dashed var(--line);border-radius:10px;padding:10px 14px;background:rgba(255,255,255,.45)}
+  .stamp b{color:var(--leaf-deep)}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+  .tab{appearance:none;border:1.5px solid var(--line);background:var(--panel);color:var(--slate);
+    font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;
+    padding:11px 16px;border-radius:11px 11px 0 0;cursor:pointer;transition:.15s;border-bottom-color:transparent;
+    display:flex;align-items:center;gap:8px}
+  .tab:hover{color:var(--leaf-deep);background:#fff}
+  .tab[aria-selected="true"]{background:var(--leaf-deep);color:#fff;border-color:var(--leaf-deep)}
+  .tab .dot{width:8px;height:8px;border-radius:50%;background:var(--grow)}
+  .card{background:var(--panel);border:1.5px solid var(--line);border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+  .card h2{font-family:"Fraunces",serif;font-weight:600;font-size:21px;margin:0 0 2px}
+  .card .sub{color:var(--slate);font-size:13px;margin:0 0 16px}
+  .section-label{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--leaf);font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 12px}
+  .section-label::before{content:"";flex:0 0 auto;width:18px;height:2px;background:var(--grow-deep)}
+  .planthead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between}
+  .planthead .id{display:flex;align-items:center;gap:14px}
+  .glyph{width:52px;height:52px;flex:0 0 auto;border-radius:14px;background:var(--mist);display:grid;place-items:center}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-family:"Space Mono",monospace;font-size:11px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--slate)}
+  .chip b{color:var(--leaf-deep)}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px}
+  .field .hint{font-family:"Space Mono",monospace;font-size:10px;color:var(--slate);font-weight:400}
+  .field input{width:100%;font-family:"Space Mono",monospace;font-size:16px;color:var(--ink);background:#fff;
+    border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;transition:.15s}
+  .field input:focus{outline:none;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(47,107,67,.15)}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+  .btn{appearance:none;cursor:pointer;font-family:"Inter",sans-serif;font-weight:600;font-size:14px;border-radius:11px;
+    padding:11px 18px;border:1.5px solid var(--leaf-deep);background:var(--leaf-deep);color:#fff;transition:.15s;
+    display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{background:var(--leaf);border-color:var(--leaf)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.ghost{background:#fff;color:var(--leaf-deep)}
+  .btn.ghost:hover{background:var(--mist)}
+  .btn.grow{background:var(--grow);border-color:var(--grow-deep);color:var(--leaf-deep)}
+  .btn.grow:hover{background:var(--grow-deep);color:#fff}
+  .muted{color:var(--slate);font-size:13px}
+  /* week / day cards */
+  .week-intro{margin-bottom:14px}
+  .week-intro .section-label{margin-bottom:6px}
+  .day-card{background:#fff}
+  .day-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .day-head h3{font-family:"Fraunces",serif;font-weight:600;font-size:21px;margin:0}
+  .day-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+  .day-card .field label{text-transform:uppercase;font-size:11px;letter-spacing:.04em;color:var(--slate);font-weight:700}
+  .day-card .field .hint{text-transform:none;letter-spacing:0;color:rgba(92,109,96,.6);font-weight:400}
+  .day-card .field input{text-align:center;background:#FBFDFA}
+  .day-doctor{margin-top:18px;border-top:2px solid var(--line);padding-top:16px}
+  @media (max-width:680px){.day-grid{grid-template-columns:repeat(2,1fr)}}
+  /* doctor */
+  .doc-badge{font-family:"Space Mono",monospace;font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px}
+  .doc-badge.good{background:rgba(169,222,58,.25);color:var(--leaf-deep);border:1px solid var(--grow-deep)}
+  .doc-badge.warn{background:rgba(224,150,43,.18);color:#9a6310;border:1px solid var(--amber)}
+  .metric{padding:14px 0;border-top:1px dashed var(--line)}
+  .metric:first-of-type{border-top:none}
+  .metric .top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .metric .mname{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+  .status-pill{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:3px 8px;border-radius:6px}
+  .status-pill.ok{background:rgba(169,222,58,.3);color:var(--leaf-deep)}
+  .status-pill.low{background:rgba(224,150,43,.2);color:#9a6310}
+  .status-pill.high{background:rgba(197,86,47,.16);color:var(--clay)}
+  .metric .msg{font-size:13px;color:var(--slate);margin-top:9px;line-height:1.55}
+  .metric .msg b{color:var(--ink)}
+  .gauge{position:relative;height:30px;border-radius:8px;background:#fff;border:1px solid var(--line);overflow:hidden}
+  .gauge .band{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(169,222,58,.35),rgba(169,222,58,.35) 6px,rgba(169,222,58,.2) 6px,rgba(169,222,58,.2) 12px);border-left:1.5px solid var(--grow-deep);border-right:1.5px solid var(--grow-deep)}
+  .gauge .marker{position:absolute;top:-3px;bottom:-3px;width:3px;background:var(--ink);border-radius:2px;transform:translateX(-50%)}
+  .gauge .marker.out{background:var(--clay)}
+  .gauge .marker::after{content:"";position:absolute;top:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid currentColor;color:inherit}
+  .gauge-scale{display:flex;justify-content:space-between;font-family:"Space Mono",monospace;font-size:9px;color:var(--slate);margin-top:3px}
+  .verdict{margin-top:18px;border-top:2px solid var(--line);padding-top:16px}
+  .verdict p{margin:0 0 12px;font-size:14px}
+  .vbtns{display:flex;gap:10px;flex-wrap:wrap}
+  .vbtn{appearance:none;cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:9px 16px;font-weight:600;font-size:14px;color:var(--ink);transition:.15s;display:flex;gap:8px;align-items:center}
+  .vbtn:hover{border-color:var(--leaf)}
+  .vbtn[aria-pressed="true"].agree{background:var(--leaf-deep);color:#fff;border-color:var(--leaf-deep)}
+  .vbtn[aria-pressed="true"].disagree{background:var(--clay);color:#fff;border-color:var(--clay)}
+  textarea{width:100%;font-family:"Inter",sans-serif;font-size:14px;border:1.5px solid var(--line);border-radius:11px;padding:11px 13px;margin-top:12px;resize:vertical;min-height:78px;background:#fff}
+  textarea:focus{outline:none;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(47,107,67,.15)}
+  .saved-note{margin-top:10px;font-family:"Space Mono",monospace;font-size:12px;color:var(--leaf-deep);background:rgba(169,222,58,.16);border:1px solid var(--grow-deep);border-radius:8px;padding:8px 11px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+  th{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:700}
+  td{font-family:"Space Mono",monospace;color:var(--ink)}
+  .vdot{display:inline-block;width:9px;height:9px;border-radius:50%}
+  .vdot.good{background:var(--grow-deep)} .vdot.warn{background:var(--clay)} .vdot.none{background:var(--line)}
+  .tag{font-family:"Space Mono",monospace;font-size:10px;padding:2px 7px;border-radius:6px}
+  .tag.a{background:rgba(47,107,67,.14);color:var(--leaf-deep)} .tag.d{background:rgba(197,86,47,.14);color:var(--clay)}
+  .empty{color:var(--slate);font-size:13px;font-style:italic;padding:10px 0}
+  .trend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .spark{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+  .spark .lbl{font-size:12px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline}
+  .spark .lbl span{font-family:"Space Mono",monospace;font-size:13px;color:var(--leaf-deep)}
+  .spark .days{display:flex;justify-content:space-between;font-family:"Space Mono",monospace;font-size:9px;color:var(--slate);margin-top:2px}
+  .drop{border:2px dashed var(--line);border-radius:14px;padding:26px;text-align:center;background:#fff;transition:.15s}
+  .drop.drag{border-color:var(--leaf);background:var(--mist)}
+  .drop p{margin:8px 0 0;color:var(--slate);font-size:13px}
+  .preview{max-width:240px;max-height:240px;border-radius:12px;border:1px solid var(--line);display:block;margin:0 auto 14px}
+  .or{display:flex;align-items:center;gap:12px;color:var(--slate);font-family:"Space Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:16px 0}
+  .or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+  .species-card{display:flex;gap:14px;align-items:flex-start;background:rgba(169,222,58,.12);border:1px solid var(--grow-deep);border-radius:13px;padding:16px}
+  .species-card h3{font-family:"Fraunces",serif;margin:0 0 2px;font-size:20px}
+  .species-card .sci{font-style:italic;color:var(--slate);font-size:13px}
+  .conf{font-family:"Space Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:6px;background:#fff;border:1px solid var(--line);color:var(--slate)}
+  .spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin .7s linear infinite}
+  .btn.ghost .spinner,.btn.grow .spinner{border-color:rgba(47,107,67,.3);border-top-color:var(--leaf-deep)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err{background:rgba(197,86,47,.1);border:1px solid var(--clay);color:#8a3a1d;border-radius:11px;padding:11px 14px;font-size:13px;margin-top:12px}
+  .plan{font-size:14px;line-height:1.65}
+  .plan p{margin:0 0 12px} .plan ul{margin:0 0 12px;padding-left:20px} .plan li{margin:4px 0}
+  .plan h4{font-family:"Fraunces",serif;font-size:16px;margin:16px 0 6px;color:var(--leaf-deep)}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--slate);margin-top:6px}
+  .legend b{color:var(--ink)}
+  @media (max-width:560px){.wrap{padding:20px 14px 60px}.stamp{display:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef} = React;
+
+/* ============================================================
+   CONFIG — set these two values before sharing the dashboard.
+   The API key is NEVER in this file. It lives only on your
+   Cloudflare Worker. See DEPLOY_GUIDE.md.
+   ============================================================ */
+const PROXY_URL = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev"; // <-- paste your Worker URL
+const APP_TOKEN = "REPLACE_WITH_CLASS_PASSPHRASE";                       // <-- must match the Worker's APP_TOKEN secret
+/* ============================================================ */
+
+const store = {
+  async get(key){ try{
+      if(window.storage){ const r = await window.storage.get(key); return r ? JSON.parse(r.value) : null; }
+      const r = localStorage.getItem(key); return r ? JSON.parse(r) : null;
+    }catch(e){ return null; } },
+  async set(key,val){ try{
+      if(window.storage){ await window.storage.set(key, JSON.stringify(val)); return; }
+      localStorage.setItem(key, JSON.stringify(val));
+    }catch(e){} }
+};
+
+const PLANTS = {
+  peaceLily:{ key:"peaceLily", name:"Peace Lily", glyph:"🌿",
+    ranges:{ soil:{min:4,max:7}, light:{min:200,max:500}, humidity:{min:50,max:60}, leafWithin:4 } },
+  pothos:{ key:"pothos", name:"Pothos", glyph:"🪴",
+    ranges:{ soil:{min:3,max:6}, light:{min:100,max:1000}, humidity:{min:40,max:60}, leafWithin:4 } }
+};
+
+const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday"];
+const ALLK = ["soil","leaf","light","humidity","room"];
+const emptyDay = () => ({soil:"",leaf:"",light:"",humidity:"",room:"",feedback:null});
+const emptyWeek = () => { const w={}; DAYS.forEach(d=>w[d]=emptyDay()); return w; };
+const dayComplete = d => ALLK.every(k=>d[k]!=="" && !isNaN(Number(d[k])));
+function lastCompleteDay(week){ for(let i=DAYS.length-1;i>=0;i--){ if(dayComplete(week[DAYS[i]])) return {day:DAYS[i],...week[DAYS[i]]}; } return null; }
+
+/* ---------- diagnostics ---------- */
+function evalRanged(value, range, key){
+  const v=Number(value); const {min,max}=range;
+  const unit = key==="soil" ? "" : key==="light" ? " lux" : "%";
+  const target=`${min}–${max}${unit}`; const shown=`${v}${unit}`;
+  const actions={
+    soil:{low:"Water it.", high:"Hold off on watering and let the soil dry out a bit."},
+    light:{low:"Move it somewhere brighter.", high:"Pull it back from the window so it gets less direct light."},
+    humidity:{low:"Mist it or move it somewhere more humid.", high:"Move it somewhere drier or improve the airflow around it."}
+  };
+  if(v<min) return {status:"low", msg:`is ${shown}, just below the healthy ${target} range. ${actions[key].low}`};
+  if(v>max) return {status:"high", msg:`is ${shown}, above the healthy ${target} range. ${actions[key].high}`};
+  return {status:"ok", msg:`is ${shown}, right inside the healthy ${target} range. Looks great — no change needed.`};
+}
+function evalLeaf(leaf, room, within){
+  const diff=Number(leaf)-Number(room); const ad=Math.abs(diff);
+  if(ad<=within) return {status:"ok", msg:`is ${leaf}°F and the room is ${room}°F — only ${ad}°F apart (healthy is within ${within}°F). Looks great.`};
+  if(diff>within) return {status:"high", msg:`is ${leaf}°F while the room is ${room}°F — ${ad}°F apart (healthy is within ${within}°F). The leaves are running hot, so move it away from heat or direct sun and cool the room a little.`};
+  return {status:"low", msg:`is ${leaf}°F while the room is ${room}°F — ${ad}°F apart (healthy is within ${within}°F). The leaves are running cold, so move it away from drafts or cold windows and warm the room a little.`};
+}
+function diagnose(reading, ranges){
+  const out={};
+  out.soil=evalRanged(reading.soil,ranges.soil,"soil");
+  out.light=evalRanged(reading.light,ranges.light,"light");
+  out.humidity=evalRanged(reading.humidity,ranges.humidity,"humidity");
+  out.leaf=evalLeaf(reading.leaf,reading.room,ranges.leafWithin);
+  out.problems=["soil","light","humidity","leaf"].filter(k=>out[k].status!=="ok").length;
+  return out;
+}
+
+/* ---------- visuals ---------- */
+function Sprout(){return (
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M12 21V11" stroke="var(--leaf-deep)" strokeWidth="1.6" strokeLinecap="round"/>
+    <path d="M12 13C12 9 9 6 4 6c0 5 3 8 8 7z" fill="var(--grow)" stroke="var(--leaf-deep)" strokeWidth="1.3"/>
+    <path d="M12 11C12 7 15 5 20 5c0 5-3 7-8 6z" fill="var(--grow)" stroke="var(--leaf-deep)" strokeWidth="1.3"/>
+  </svg>);}
+function Gauge({value,range,domainLo}){
+  const v=Number(value); const {min,max}=range;
+  const hi=Math.max(max*1.5, max+(max-min)*1.2); const lo=domainLo;
+  const pct=x=>Math.max(0,Math.min(100,((x-lo)/(hi-lo))*100));
+  const out=v<min||v>max;
+  return (<div>
+    <div className="gauge">
+      <div className="band" style={{left:pct(min)+"%",width:(pct(max)-pct(min))+"%"}}/>
+      <div className={"marker"+(out?" out":"")} style={{left:pct(v)+"%",color:out?"var(--clay)":"var(--ink)"}}/>
+    </div>
+    <div className="gauge-scale"><span>{lo}</span><span>healthy {min}–{max}</span><span>{Math.round(hi)}</span></div>
+  </div>);
+}
+function LeafGauge({leaf,room,within}){
+  const diff=Number(leaf)-Number(room); const span=Math.max(10,within*2.5);
+  const pct=x=>Math.max(0,Math.min(100,((x+span)/(span*2))*100)); const out=Math.abs(diff)>within;
+  return (<div>
+    <div className="gauge">
+      <div className="band" style={{left:pct(-within)+"%",width:(pct(within)-pct(-within))+"%"}}/>
+      <div className={"marker"+(out?" out":"")} style={{left:pct(diff)+"%",color:out?"var(--clay)":"var(--ink)"}}/>
+    </div>
+    <div className="gauge-scale"><span>{-span}°F cooler</span><span>±{within}°F of room</span><span>+{span}°F hotter</span></div>
+  </div>);
+}
+function Sparkline({values,label,unit}){
+  const idx=values.map((v,i)=>({v,i})).filter(o=>o.v!==""&&o.v!=null&&!isNaN(Number(o.v)));
+  if(idx.length<2) return (<div className="spark"><div className="lbl">{label}<span>—</span></div>
+    <div className="muted" style={{fontSize:11,marginTop:8}}>Need 2+ days</div></div>);
+  const w=160,h=40,pad=4; const nums=idx.map(o=>Number(o.v));
+  const min=Math.min(...nums),max=Math.max(...nums),rng=(max-min)||1;
+  const X=i=>pad+(i/(DAYS.length-1))*(w-pad*2);
+  const Y=v=>h-pad-((v-min)/rng)*(h-pad*2);
+  const pts=idx.map(o=>`${X(o.i).toFixed(1)},${Y(Number(o.v)).toFixed(1)}`).join(" ");
+  const last=nums[nums.length-1];
+  return (<div className="spark">
+    <div className="lbl">{label}<span>{last}{unit}</span></div>
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} style={{marginTop:6,display:"block"}}>
+      <polyline fill="none" stroke="var(--leaf)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" points={pts}/>
+      {idx.map(o=><circle key={o.i} cx={X(o.i)} cy={Y(Number(o.v))} r={o.i===idx[idx.length-1].i?3:1.8} fill="var(--grow-deep)"/>)}
+    </svg>
+    <div className="days">{DAYS.map(d=><span key={d}>{d[0]}</span>)}</div>
+  </div>);
+}
+
+/* ---------- per-day Plant Doctor ---------- */
+const STATUS_LABEL={ok:"In range",low:"Below",high:"Above"};
+function Doctor({reading,ranges,feedback,onFeedback}){
+  const d=diagnose(reading,ranges); const healthy=d.problems===0;
+  const rows=[
+    {k:"soil",g:<Gauge value={reading.soil} range={ranges.soil} domainLo={1}/>},
+    {k:"light",g:<Gauge value={reading.light} range={ranges.light} domainLo={0}/>},
+    {k:"humidity",g:<Gauge value={reading.humidity} range={ranges.humidity} domainLo={0}/>},
+    {k:"leaf",g:<LeafGauge leaf={reading.leaf} room={reading.room} within={ranges.leafWithin}/>}
+  ];
+  const names={soil:"Soil moisture",light:"Light",humidity:"Humidity",leaf:"Leaf temperature"};
+  const [draft,setDraft]=useState(feedback?.notes||"");
+  useEffect(()=>{ setDraft(feedback?.notes||""); },[feedback?.decision]);
+  return (<div>
+    <div className="section-label">Plant Doctor</div>
+    <span className={"doc-badge "+(healthy?"good":"warn")}>
+      {healthy?"✓ All systems healthy":`⚠ ${d.problems} reading${d.problems>1?"s":""} need attention`}</span>
+    {rows.map(({k,g})=>(
+      <div className="metric" key={k}>
+        <div className="top"><span className="mname">{names[k]}
+          <span className={"status-pill "+d[k].status}>{STATUS_LABEL[d[k].status]}</span></span></div>
+        {g}
+        <div className="msg"><b>{names[k]}</b> {d[k].msg}</div>
+      </div>))}
+    <div className="verdict">
+      <p>Do you agree with the Plant Doctor for {reading.date}?</p>
+      <div className="vbtns">
+        <button className="vbtn agree" aria-pressed={feedback?.decision==="agree"}
+          onClick={()=>onFeedback({decision:"agree",notes:""})}>👍 I agree</button>
+        <button className="vbtn disagree" aria-pressed={feedback?.decision==="disagree"}
+          onClick={()=>onFeedback({decision:"disagree",notes:feedback?.notes||""})}>👎 I disagree</button>
+      </div>
+      {feedback?.decision==="disagree" && (<div>
+        <textarea placeholder="Engineer's notes: why do you disagree? What did you observe that the data missed?"
+          value={draft} onChange={e=>setDraft(e.target.value)}/>
+        <div className="actions" style={{marginTop:10}}>
+          <button className="btn ghost" onClick={()=>onFeedback({decision:"disagree",notes:draft})}>Save my notes</button>
+          {feedback?.notes && draft===feedback.notes && <span className="muted">Saved ✓</span>}
+        </div></div>)}
+      {feedback?.decision==="agree" && <div className="saved-note">Logged: you agreed with this diagnosis.</div>}
+    </div>
+  </div>);
+}
+
+/* ---------- one weekday card ---------- */
+function DayCard({day,data,ranges,onField,onFeedback}){
+  const fields=[
+    {k:"soil",label:"Soil moisture",unit:"1–10"},
+    {k:"leaf",label:"Leaf temp",unit:"°F"},
+    {k:"light",label:"Light",unit:"lux"},
+    {k:"humidity",label:"Humidity",unit:"%"},
+    {k:"room",label:"Room temp",unit:"°F"}
+  ];
+  const complete=dayComplete(data);
+  return (
+    <div className="card day-card">
+      <div className="day-head"><h3>{day}</h3><Sprout/></div>
+      <div className="day-grid">
+        {fields.map(f=>(
+          <div className="field" key={f.k}>
+            <label>{f.label} <span className="hint">({f.unit})</span></label>
+            <input type="number" inputMode="decimal" placeholder="—"
+              value={data[f.k]} onChange={e=>onField(day,f.k,e.target.value)}/>
+          </div>))}
+      </div>
+      {complete && (
+        <div className="day-doctor">
+          <Doctor reading={{...data,date:day}} ranges={ranges}
+            feedback={data.feedback} onFeedback={fb=>onFeedback(day,fb)}/>
+        </div>)}
+    </div>
+  );
+}
+
+/* ---------- the full Monday–Friday log ---------- */
+function WeekLog({week,setWeek,ranges,persist,days=DAYS}){
+  function onField(day,metric,value){ const next={...week,[day]:{...week[day],[metric]:value}}; setWeek(next); persist(next); }
+  function onFeedback(day,fb){ const next={...week,[day]:{...week[day],feedback:fb}}; setWeek(next); persist(next); }
+  return (<>{days.map(d=><DayCard key={d} day={d} data={week[d]} ranges={ranges} onField={onField} onFeedback={onFeedback}/>)}</>);
+}
+function WeekTrends({week}){
+  const filled=DAYS.filter(d=>ALLK.some(k=>week[d][k]!=="")).length;
+  if(filled<2) return null;
+  const col=k=>DAYS.map(d=>week[d][k]);
+  const leafMinusRoom=DAYS.map(d=>{const l=week[d].leaf,r=week[d].room; return (l!==""&&r!=="")?Number(l)-Number(r):"";});
+  return (<div className="card">
+    <div className="section-label">Trends across the week</div>
+    <div className="trend-grid">
+      <Sparkline values={col("soil")} label="Soil moisture" unit=""/>
+      <Sparkline values={col("light")} label="Light" unit=" lux"/>
+      <Sparkline values={col("humidity")} label="Humidity" unit="%"/>
+      <Sparkline values={leafMinusRoom} label="Leaf − room" unit="°F"/>
+    </div>
+  </div>);
+}
+function WeekSummary({week,ranges}){
+  const any=DAYS.some(d=>dayComplete(week[d]));
+  return (<div className="card">
+    <div className="section-label">Week at a glance</div>
+    {!any && <div className="empty">Once you complete a day's five readings, its status appears here.</div>}
+    {any && <table>
+      <thead><tr><th>Day</th><th>Soil</th><th>Light</th><th>Humid</th><th>Room°F</th><th>Leaf°F</th><th>Status</th><th>You</th></tr></thead>
+      <tbody>{DAYS.map(d=>{
+        const r=week[d]; const done=dayComplete(r); const diag=done?diagnose(r,ranges):null; const good=done&&diag.problems===0;
+        return (<tr key={d}>
+          <td>{d}</td>
+          <td>{r.soil||"—"}</td><td>{r.light||"—"}</td><td>{r.humidity||"—"}</td><td>{r.room||"—"}</td><td>{r.leaf||"—"}</td>
+          <td>{done?<><span className={"vdot "+(good?"good":"warn")}/> {good?"OK":diag.problems}</>:<><span className="vdot none"/> —</>}</td>
+          <td>{r.feedback?.decision==="agree" && <span className="tag a">agreed</span>}
+              {r.feedback?.decision==="disagree" && <span className="tag d">disagreed</span>}</td>
+        </tr>);
+      })}</tbody>
+    </table>}
+  </div>);
+}
+
+/* ---------- tracked plant ---------- */
+function PlantView({plant,week,setWeek,storageKey}){
+  const r=plant.ranges;
+  const persist=w=>store.set(storageKey,w);
+  return (<div>
+    <div className="card">
+      <div className="planthead">
+        <div className="id">
+          <div className="glyph" style={{fontSize:26}}>{plant.glyph}</div>
+          <div><h2>{plant.name}</h2><div className="sub" style={{margin:0}}>Healthy targets from your reference sheet</div></div>
+        </div>
+        <div className="chips">
+          <span className="chip">Soil <b>{r.soil.min}–{r.soil.max}</b></span>
+          <span className="chip">Light <b>{r.light.min}–{r.light.max} lux</b></span>
+          <span className="chip">Humidity <b>{r.humidity.min}–{r.humidity.max}%</b></span>
+          <span className="chip">Leaf temp <b>±{r.leafWithin}°F of room</b></span>
+        </div>
+      </div>
+    </div>
+    <div className="week-intro">
+      <div className="section-label">Daily input log · Monday to Friday</div>
+      <p className="muted">Fill in all five readings for a day and the Plant Doctor checks that day automatically.</p>
+    </div>
+    <WeekLog week={week} setWeek={setWeek} ranges={r} persist={persist}/>
+    <WeekTrends week={week}/>
+    <WeekSummary week={week} ranges={r}/>
+  </div>);
+}
+
+/* ---------- Claude API helpers ---------- */
+async function callClaude(messages, max=1024){
+  if(!PROXY_URL || PROXY_URL.includes("YOUR-WORKER-NAME"))
+    throw new Error("Set PROXY_URL at the top of this file to your Cloudflare Worker URL.");
+  const res=await fetch(PROXY_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-app-token":APP_TOKEN},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514", max_tokens:max, messages})});
+  if(!res.ok) throw new Error("API error "+res.status);
+  const data=await res.json();
+  return data.content.filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+}
+function parseJSON(text){ const c=text.replace(/```json/gi,"").replace(/```/g,"").trim();
+  const s=c.indexOf("{"),e=c.lastIndexOf("}"); return JSON.parse(s>=0?c.slice(s,e+1):c); }
+function renderPlan(text){
+  const lines=text.split("\n"); const out=[]; let list=[]; let k=0;
+  const flush=()=>{ if(list.length){ out.push(<ul key={"u"+k++}>{list.map((li,i)=><li key={i}>{li}</li>)}</ul>); list=[]; } };
+  lines.forEach(line=>{ const t=line.trim();
+    if(!t){ flush(); return; }
+    if(/^#{1,6}\s/.test(t)){ flush(); out.push(<h4 key={"h"+k++}>{t.replace(/^#{1,6}\s/,"")}</h4>); }
+    else if(/^[-*•]\s/.test(t)){ list.push(t.replace(/^[-*•]\s/,"")); }
+    else { flush(); out.push(<p key={"p"+k++}>{t.replace(/\*\*/g,"")}</p>); } });
+  flush(); return out;
+}
+
+/* ---------- Mystery Plant ---------- */
+function MysteryPlant({state,setState}){
+  const {image,species,ranges,plan,week}=state;
+  const [drag,setDrag]=useState(false);
+  const [busy,setBusy]=useState("");
+  const [err,setErr]=useState("");
+  const [manual,setManual]=useState("");
+  const fileRef=useRef();
+  const update=patch=>{ const next={...state,...patch}; setState(next);
+    store.set("ge:mystery",{species:next.species,ranges:next.ranges,plan:next.plan,week:next.week}); };
+
+  function handleFile(file){ if(!file) return; const reader=new FileReader();
+    reader.onload=()=>setState(s=>({...s,image:reader.result})); reader.readAsDataURL(file); }
+  async function identify(){ setErr(""); setBusy("id");
+    try{ const b64=image.split(",")[1]; const media=image.substring(5,image.indexOf(";"));
+      const text=await callClaude([{role:"user",content:[
+        {type:"image",source:{type:"base64",media_type:media,data:b64}},
+        {type:"text",text:'Identify the houseplant in this photo. Respond with ONLY a valid JSON object, no markdown or backticks, with keys: "commonName" (string), "scientificName" (string), "confidence" ("high"|"medium"|"low"), "description" (one or two simple sentences a student would understand).'}]}]);
+      update({species:parseJSON(text)}); }
+    catch(e){ setErr("Couldn't identify the plant from the photo. Try a clearer, well-lit picture — or type the name in below."); }
+    setBusy(""); }
+  function useManual(){ if(!manual.trim()) return;
+    update({species:{commonName:manual.trim(),scientificName:"",confidence:"manual",description:"Entered by hand by the engineer."}}); }
+  async function findRanges(){ setErr(""); setBusy("ranges");
+    try{ const text=await callClaude([{role:"user",content:
+      `You are a plant-care expert for a student workshop. For the houseplant "${species.commonName}"${species.scientificName?` (${species.scientificName})`:""}, give healthy indoor care ranges using these EXACT scales: soil moisture on a 1–10 scale (1=bone dry, 10=soaked); light in lux; humidity in %; and a leaf-temperature rule expressed as "within N °F of room temperature". Respond with ONLY valid JSON, no markdown or backticks, keys: "soil":{"min":int,"max":int}, "light":{"min":int,"max":int}, "humidity":{"min":int,"max":int}, "leafWithin":int, "careSummary": one short sentence. Use sensible integers.`}]);
+      const raw=parseJSON(text);
+      update({ranges:{soil:raw.soil,light:raw.light,humidity:raw.humidity,leafWithin:raw.leafWithin,careSummary:raw.careSummary}}); }
+    catch(e){ setErr("Couldn't fetch the healthy ranges. Please try again."); }
+    setBusy(""); }
+  async function makePlan(){ setErr(""); setBusy("plan");
+    try{ const recent=lastCompleteDay(week);
+      const readingTxt=recent?`Their most recent complete reading (${recent.day}) — soil ${recent.soil}/10, light ${recent.light} lux, humidity ${recent.humidity}%, room ${recent.room}°F, leaf ${recent.leaf}°F.`:"They have not logged a full day of readings yet.";
+      const text=await callClaude([{role:"user",content:
+        `You are a friendly plant-care coach for a middle/high-school "Greenhouse Engineers" workshop. Write a short, encouraging growth plan for caring for a ${species.commonName} over the next few weeks. Healthy ranges: soil ${ranges.soil.min}-${ranges.soil.max}/10, light ${ranges.light.min}-${ranges.light.max} lux, humidity ${ranges.humidity.min}-${ranges.humidity.max}%, leaf temp within ${ranges.leafWithin}°F of room. ${readingTxt} Use simple language. Organize as a few short sections with markdown ## headers and a few "-" bullet points. Keep it practical: watering, light, humidity, temperature, and what to watch for.`}],1500);
+      update({plan:text}); }
+    catch(e){ setErr("Couldn't generate the growth plan. Please try again."); }
+    setBusy(""); }
+
+  const persist=w=>{ const next={...state,week:w}; setState(next);
+    store.set("ge:mystery",{species:next.species,ranges:next.ranges,plan:next.plan,week:w}); };
+  const planParsed=plan?renderPlan(plan):null;
+
+  return (<div>
+    <div className="card">
+      <div className="section-label">Step 1 · Identify the species</div>
+      <h2 style={{fontFamily:'"Fraunces",serif',margin:"0 0 10px",fontSize:21}}>Mystery Plant</h2>
+      {!species && <>
+        {image ? <img className="preview" src={image} alt="uploaded plant"/>
+          : <div className={"drop"+(drag?" drag":"")}
+              onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
+              onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0]);}}>
+              <div style={{fontSize:30}}>📷</div><p><b>Drop a photo here</b> or use the button below</p></div>}
+        <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
+        <div className="actions">
+          <button className="btn ghost" onClick={()=>fileRef.current.click()}>{image?"Choose a different photo":"Upload a photo"}</button>
+          {image && <button className="btn" disabled={busy==="id"} onClick={identify}>
+            {busy==="id"?<><span className="spinner"/> Identifying…</>:"🔍 Identify this plant"}</button>}
+        </div>
+        <div className="or">or enter it yourself</div>
+        <div className="actions" style={{marginTop:0}}>
+          <input style={{flex:"1 1 200px",fontFamily:'"Space Mono",monospace',border:"1.5px solid var(--line)",borderRadius:10,padding:"10px 12px"}}
+            placeholder="Type the plant name…" value={manual} onChange={e=>setManual(e.target.value)}/>
+          <button className="btn ghost" onClick={useManual}>Use this name</button>
+        </div></>}
+      {species && <div className="species-card">
+        {image && <img src={image} alt="" style={{width:64,height:64,objectFit:"cover",borderRadius:10,flex:"0 0 auto"}}/>}
+        <div style={{flex:1}}><h3>{species.commonName}</h3>
+          {species.scientificName && <div className="sci">{species.scientificName}</div>}
+          <p className="muted" style={{margin:"8px 0 0"}}>{species.description}</p></div>
+        <span className="conf">conf: {species.confidence}</span></div>}
+      {species && <div className="actions">
+        <button className="btn ghost" onClick={()=>update({species:null,ranges:null,plan:null})}>Start over</button></div>}
+      {err && <div className="err">{err}</div>}
+    </div>
+
+    {species && <div className="card">
+      <div className="section-label">Step 2 · Healthy ranges</div>
+      {!ranges ? <div className="actions" style={{marginTop:0}}>
+          <button className="btn grow" disabled={busy==="ranges"} onClick={findRanges}>
+            {busy==="ranges"?<><span className="spinner"/> Looking up care needs…</>:"🌡 Find the healthy ranges"}</button>
+          <span className="muted">We'll look up the right targets for a {species.commonName}.</span></div>
+        : <>{ranges.careSummary && <p className="muted" style={{marginTop:0}}>{ranges.careSummary}</p>}
+          <div className="chips">
+            <span className="chip">Soil <b>{ranges.soil.min}–{ranges.soil.max}</b></span>
+            <span className="chip">Light <b>{ranges.light.min}–{ranges.light.max} lux</b></span>
+            <span className="chip">Humidity <b>{ranges.humidity.min}–{ranges.humidity.max}%</b></span>
+            <span className="chip">Leaf temp <b>±{ranges.leafWithin}°F of room</b></span></div></>}
+    </div>}
+
+    {ranges && <>
+      <div className="week-intro">
+        <div className="section-label">Step 3 · Log Friday's measurement</div>
+        <p className="muted">Enter all five readings and the {species.commonName} is checked against its healthy ranges.</p>
+      </div>
+      <WeekLog week={week} setWeek={w=>setState(s=>({...s,week:w}))} ranges={ranges} persist={persist} days={["Friday"]}/>
+    </>}
+
+    {ranges && <div className="card">
+      <div className="section-label">Step 4 · Growth plan</div>
+      {!plan ? <div className="actions" style={{marginTop:0}}>
+          <button className="btn grow" disabled={busy==="plan"} onClick={makePlan}>
+            {busy==="plan"?<><span className="spinner"/> Writing your plan…</>:"📋 Generate growth plan"}</button>
+          <span className="muted">A care plan tailored to your {species.commonName}.</span></div>
+        : <><div className="plan">{planParsed}</div>
+          <div className="actions"><button className="btn ghost" disabled={busy==="plan"} onClick={makePlan}>
+            {busy==="plan"?<><span className="spinner"/> Updating…</>:"↻ Regenerate"}</button></div></>}
+      {err && <div className="err">{err}</div>}
+    </div>}
+  </div>);
+}
+
+/* ---------- root ---------- */
+function App(){
+  const [tab,setTab]=useState("peaceLily");
+  const [loaded,setLoaded]=useState(false);
+  const [peaceWeek,setPeaceWeek]=useState(emptyWeek());
+  const [pothosWeek,setPothosWeek]=useState(emptyWeek());
+  const [mystery,setMystery]=useState({image:null,species:null,ranges:null,plan:null,week:emptyWeek()});
+
+  useEffect(()=>{(async()=>{
+    setPeaceWeek(await store.get("ge:peaceLily:week") || emptyWeek());
+    setPothosWeek(await store.get("ge:pothos:week") || emptyWeek());
+    const m=await store.get("ge:mystery");
+    if(m) setMystery(s=>({...s,species:m.species||null,ranges:m.ranges||null,plan:m.plan||null,week:m.week||emptyWeek()}));
+    setLoaded(true);
+  })();},[]);
+
+  const tabs=[{k:"peaceLily",label:"Peace Lily"},{k:"pothos",label:"Pothos"},{k:"mystery",label:"Mystery Plant"}];
+  return (<div className="wrap">
+    <div className="masthead">
+      <div>
+        <div className="brand-eyebrow">
+          <svg className="leaf" viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 10 5 20 4c1 10-4 16-12 16-2 0-4-1-4 0z" fill="var(--grow)" stroke="var(--leaf-deep)" strokeWidth="1.4"/><path d="M6 18C9 14 13 10 18 7" stroke="var(--leaf-deep)" strokeWidth="1.4" strokeLinecap="round"/></svg>
+          Greenhouse Engineers · Field Dashboard</div>
+        <h1>Plant Care Lab</h1>
+        <div className="tagline">Log a week of sensor readings, let the Plant Doctor check each day against healthy ranges, and decide for yourself whether you agree.</div>
+      </div>
+      <div className="stamp">STATION LOG<br/><b>{new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}</b><br/>
+        Plants tracked: <b>2</b><br/>Mystery: <b>Friday</b></div>
+    </div>
+    <div className="tabs" role="tablist">
+      {tabs.map(t=>(<button key={t.k} role="tab" aria-selected={tab===t.k} className="tab" onClick={()=>setTab(t.k)}>
+        <span className="dot"/>{t.label}</button>))}
+    </div>
+    {!loaded ? <div className="card"><div className="empty">Loading your station log…</div></div> : <>
+      {tab==="peaceLily" && <PlantView plant={PLANTS.peaceLily} week={peaceWeek} setWeek={setPeaceWeek} storageKey="ge:peaceLily:week"/>}
+      {tab==="pothos" && <PlantView plant={PLANTS.pothos} week={pothosWeek} setWeek={setPothosWeek} storageKey="ge:pothos:week"/>}
+      {tab==="mystery" && <MysteryPlant state={mystery} setState={setMystery}/>}
+    </>}
+    <div className="legend">
+      <span><b>Soil moisture</b> 1–10 (1 dry · 10 soaked)</span>
+      <span><b>Light</b> lux</span><span><b>Humidity</b> %</span>
+      <span><b>Leaf temp</b> healthy within 4°F of room</span>
+    </div>
+  </div>);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
